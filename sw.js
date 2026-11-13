@@ -1,4 +1,4 @@
-const CACHE = 'tal-trainer-v1';
+const CACHE = 'tal-trainer-v2';
 const ASSETS = [
   './', './index.html', './app.js', './data.js',
   './manifest.json', './icon.svg',
