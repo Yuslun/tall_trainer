@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#2c2c2c">
+<title>Tal Trainer</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<style>
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: #1a1a1a; color: #e0e0e0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+body { min-height: 100vh; display: flex; flex-direction: column;
+  -webkit-tap-highlight-color: transparent; }
+header { background: #2c2c2c; padding: 12px 16px; border-bottom: 1px solid #444; }
+header h1 { margin: 0; font-size: 18px; font-weight: 600; }
+header p { margin: 4px 0 0; font-size: 12px; color: #888; }
+nav { display: flex; background: #232323; border-bottom: 1px solid #444; }
+nav button { flex: 1; background: transparent; border: none; color: #aaa;
+  padding: 12px; font-size: 14px; cursor: pointer; border-bottom: 2px solid transparent; }
+nav button.active { color: #fff; border-bottom-color: #8b6f47; }
+main { flex: 1; padding: 16px; max-width: 520px; margin: 0 auto; width: 100%; }
+.view { display: none; }
+.view.active { display: block; }
+#forcing-board, #chaos-board {
+  display: grid; grid-template-columns: repeat(8, 1fr);
+  aspect-ratio: 1; width: 100%; max-width: 500px; margin: 0 auto;
+  border: 2px solid #333; border-radius: 4px; overflow: hidden; user-select: none;
+}
+.sq { display: flex; align-items: center; justify-content: center;
+  position: relative; cursor: pointer; }
+.sq.light { background: #f0d9b5; }
+.sq.dark { background: #b58863; }
+.sq.selected { box-shadow: inset 0 0 0 4px #ffcc00; }
+.sq.hl-found { box-shadow: inset 0 0 0 3px #4caf50; }
+.sq.hl-miss { box-shadow: inset 0 0 0 3px #f44336; }
+.sq.hl-pick { box-shadow: inset 0 0 0 3px #2196f3; }
+.piece { font-size: clamp(24px, 10vw, 56px); line-height: 1; }
+.piece.w { color: #fff; text-shadow: 0 0 2px #000, 1px 1px 1px #333; }
+.piece.b { color: #111; text-shadow: 0 0 2px #fff; }
+.controls { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+.controls button { flex: 1; padding: 10px 14px; background: #3a3a3a;
+  border: 1px solid #555; color: #e0e0e0; border-radius: 6px;
+  font-size: 14px; cursor: pointer; min-width: 100px; }
+.controls button:disabled { opacity: 0.4; cursor: not-allowed; }
+.controls button.primary { background: #8b6f47; border-color: #8b6f47; color: #fff; }
+.stats { display: flex; justify-content: space-between; margin: 12px 0; font-size: 14px; }
+.stat { text-align: center; }
+.stat .label { font-size: 11px; color: #888; }
+.stat .value { font-size: 20px; font-weight: 600; color: #fff; }
+.info { background: #232323; padding: 12px; border-radius: 6px;
+  margin: 12px 0; font-size: 13px; line-height: 1.5; color: #bbb; }
+.info strong { color: #fff; }
+.pick-list { list-style: none; padding: 0; margin: 8px 0; }
+.pick-list li { padding: 6px 0; border-bottom: 1px solid #333;
+  font-family: monospace; font-size: 14px; }
+.pick-list li.match { color: #4caf50; }
+.pick-list li.miss { color: #ff9800; }
+h2 { font-size: 16px; margin: 0 0 12px; font-weight: 600; }
+.note { font-size: 12px; color: #888; line-height: 1.5; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Tal Trainer</h1>
+  <p>Latihan berpikir komputasional ala Mikhail Tal</p>
+</header>
+<nav>
+  <button data-tab="home" class="active">Beranda</button>
+  <button data-tab="forcing">Forcing Scan</button>
+  <button data-tab="chaos">Chaos Gen</button>
+</nav>
+<main>
+  <div id="view-home" class="view active">
+    <h2>Selamat datang</h2>
+    <div class="info">
+      <p><strong>Forcing Scan</strong><br>
+      Temukan semua langkah cek dan tangkapan di posisi. Latih selective search: hanya garis paksa.</p>
+      <p><strong>Chaos Generator</strong><br>
+      Pilih 3 langkah paling "tidak nyaman" bagi lawan. Bandingkan dengan langkah tajam referensi.</p>
+    </div>
+    <div class="info">
+      <p><strong>Cara pakai:</strong> klik buah, lalu klik kotak tujuan.
+      Di Forcing Scan, langkah otomatis di-undo. Di Chaos Gen, 3 pilihanmu disimpan sampai reveal.</p>
+    </div>
+    <p class="note">MVP. Data posisi masih contoh — verifikasi dengan engine untuk latihan serius.</p>
+  </div>
+
+  <div id="view-forcing" class="view">
+    <h2>Forcing Move Scanner</h2>
+    <div id="forcing-board"></div>
+    <div class="stats">
+      <div class="stat"><div class="label">Waktu</div><div class="value" id="forcing-time">3:00</div></div>
+      <div class="stat"><div class="label">Ditemukan</div><div class="value" id="forcing-found">0</div></div>
+      <div class="stat"><div class="label">Total</div><div class="value" id="forcing-total">?</div></div>
+    </div>
+    <div class="controls">
+      <button id="forcing-start" class="primary">Mulai</button>
+      <button id="forcing-done" disabled>Selesai</button>
+      <button id="forcing-next" disabled>Berikutnya</button>
+    </div>
+    <div id="forcing-result" class="info" style="display:none"></div>
+  </div>
+
+  <div id="view-chaos" class="view">
+    <h2>Chaos Generator</h2>
+    <div id="chaos-board"></div>
+    <div class="stats">
+      <div class="stat"><div class="label">Pilihan</div><div class="value" id="chaos-picks">0/3</div></div>
+    </div>
+    <ul id="chaos-list" class="pick-list"></ul>
+    <div class="controls">
+      <button id="chaos-reveal" class="primary" disabled>Reveal</button>
+      <button id="chaos-next">Berikutnya</button>
+    </div>
+    <div id="chaos-result" class="info" style="display:none"></div>
+  </div>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.13.4/chess.min.js"></script>
+<script src="data.js"></script>
+<script src="app.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () =>
+      navigator.serviceWorker.register('sw.js').catch(e => console.log(e)));
+  }
+</script>
+</body>
+</html>
