@@ -1,0 +1,14 @@
+{
+  "name": "Tal Trainer",
+  "short_name": "TalTrainer",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1a1a1a",
+  "theme_color": "#2c2c2c",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml",
+      "purpose": "any maskable" }
+  ]
+}
