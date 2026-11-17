@@ -9,26 +9,19 @@
   "orientation": "portrait",
   "background_color": "#1a1a1a",
   "theme_color": "#2c2c2c",
-  "categories": [
-    "games",
-    "education"
-  ],
+  "categories": ["games", "education"],
   "icons": [
     {
-      "src": "https://raw.githubusercontent.com/Yuslun/tall_trainer/main/icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
+      "src": "icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Chess_nlt45.svg/192px-Chess_nlt45.svg.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Chess_nlt45.svg/512px-Chess_nlt45.svg.png",
+      "src": "icon.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
