@@ -9,7 +9,10 @@
   "orientation": "portrait",
   "background_color": "#1a1a1a",
   "theme_color": "#2c2c2c",
-  "categories": ["games", "education"],
+  "categories": [
+    "games",
+    "education"
+  ],
   "icons": [
     {
       "src": "https://raw.githubusercontent.com/Yuslun/tall_trainer/main/icon.svg",
